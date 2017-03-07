@@ -30,7 +30,6 @@ export class TextboxComponent {
   };
   @Input() bind: string;
   @Output() propertyUpdate = new EventEmitter();
-  
 }
 
 export class TextBoxConfig {
@@ -57,7 +56,10 @@ export class TextBoxConfig {
   `
 })
 export class CheckboxComponent {
-  @Input() config: CheckboxConfig;
+  @Input() config: CheckboxConfig = {
+    label: { text: null },
+    input: { options: [] }
+  };
   @Input() bind: any [];
 
   updateArray(value, checked) {
@@ -101,7 +103,10 @@ export class CheckboxConfig {
   `
 })
 export class RadioComponent {
-  @Input() config: RadioConfig;
+  @Input() config: RadioConfig = {
+    label: { text: null },
+    input: { name: null, options: [] }
+  };
   @Input() bind: string;
   @Output() propertyUpdate = new EventEmitter();
 }
@@ -132,7 +137,10 @@ export class RadioConfig {
   `
 })
 export class DropdownComponent {
-  @Input() config: DropdownConfig;
+  @Input() config: DropdownConfig = {
+    label: { text: null },
+    input: { name: null, options: [] }
+  };
   @Input() bind: string;
   @Output() propertyUpdate = new EventEmitter();
 
@@ -141,8 +149,64 @@ export class DropdownComponent {
 
 export class DropdownConfig {
   label: { text: string; };
-  input: { readonly?: boolean; name: string; emptyOption?: boolean; otherOption: boolean; options: { value: string; text: string; }[] };
+  input: { readonly?: boolean; name: string; emptyOption?: boolean; otherOption?: boolean; options: { value: string; text: string; }[] };
 }
 
 
+
+
+
+
+@Component({
+  selector: 'datatable',
+  template: `
+  <button *ngIf="config.action.button.add.enable" class="btn btn-default btn-sm" [innerHtml]="config.action.button.add.text"></button>
+  <table class="table table-hover table-bordered">
+    <thead>
+      <tr>
+        <th *ngFor="let header of config.headers" [innerHtml]="header.text"></th>
+        <th *ngIf="config.action.enable" [innerHtml]="config.action.text"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let data of dataset">
+        <td *ngFor="let head of config.headers" [innerHtml]="data[head.key]"></td>
+        <td *ngIf="config.action.enable === true"></td>
+      </tr>
+    </tbody>
+  </table>
+  `
+})
+export class DatatableComponent {
+  @Input() config: DatatableConfig = {
+    headers: [], action: { enable: false }
+  };
+  @Input() dataset: any [];
+}
+
+
+export class DatatableConfig {
+  headers: { 
+    key: string; 
+    text: string; 
+  } [];
+  action: {
+    enable: boolean;
+    text?: string;
+    button?: {
+      add: { enable: boolean; text: string; };
+      style: string; //dropdown / buttons
+      view?: { enable: boolean };
+      edit?: { enable: boolean };
+      delete?: { enable: boolean };
+    }
+  };
+};
+
+/**
+      link: { enable: boolean; };
+      view: { enable: boolean; };
+      edit: { enable: boolean; };
+      delete: { enable: boolean; };
+ */
 // tslint:disable-next-line:max-line-length
