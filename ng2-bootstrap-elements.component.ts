@@ -250,5 +250,4 @@ export class DatatableConfig {
     }
   };
 };
-
 // tslint:disable-next-line:max-line-length
