@@ -156,7 +156,6 @@ export class DropdownConfig {
 
 
 
-
 @Component({
   selector: 'datatable',
   template: `
@@ -173,16 +172,16 @@ export class DropdownConfig {
         <td *ngFor="let head of config.headers" [innerHtml]="data[head.key]"></td>
         <td *ngIf="config.action.enable === true">
           <div *ngIf="config.action.button.style ==='buttons'">
-            <a *ngIf="config.action.button.view.enable" class="btn btn-default btn-xs"><i class="fa fa-eye"></i></a>
-            <a *ngIf="config.action.button.edit.enable" class="btn btn-default btn-xs"><i class="fa fa-pencil"></i></a>
-            <a *ngIf="config.action.button.delete.enable" class="btn btn-default btn-xs" data-toggle="modal" data-target="#deleteRowModal"><i class="fa fa-times"></i></a>
+            <a *ngIf="config.action.button.view.enable"   class="btn btn-default btn-xs" data-toggle="modal" data-target="#viewRowModal"><i class="fa fa-eye"></i></a>
+            <a *ngIf="config.action.button.edit.enable"   class="btn btn-default btn-xs" data-toggle="modal" data-target="#editRowModal"><i class="fa fa-pencil"></i></a>
+            <a *ngIf="config.action.button.delete.enable" class="btn btn-default btn-xs" data-toggle="modal" [attr.data-target]="'#' + deleteModalId"><i class="fa fa-times"></i></a>
           </div>
         </td>
       </tr>
     </tbody>
   </table>
 
-  <div class="modal fade" id="deleteRowModal" tabindex="-1" role="dialog" aria-labelledby="deleteRowModalLabel">
+  <div class="modal fade" [id]="deleteModalId" tabindex="-1" role="dialog" aria-labelledby="deleteRowModalLabel">
     <div class="modal-dialog modal-sm" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -190,7 +189,7 @@ export class DropdownConfig {
           <h4 class="modal-title" id="deleteRowModalLabel">Warning</h4>
         </div>
         <div class="modal-body">
-          <p [innerHtml]="config.action.button.delete.message"></p>
+          <p>Delete this record?</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -199,10 +198,9 @@ export class DropdownConfig {
       </div>
     </div>
   </div>
-
   `
 })
-export class DatatableComponent{
+export class DatatableComponent {
   @Input() config: DatatableConfig = {
     headers: [], action: { enable: false }
   };
@@ -213,18 +211,27 @@ export class DatatableComponent{
  * row. Can only be set when the 
  * user clicks on the row
  */private row: number;
+  
+/**
+ * This property will have the 
+ * modal key to delete records 
+ * from the datatable
+ */private deleteModalId = Math.random().toString(36).substring(7); 
 
 /**
  * This method sets the row in focus to 
  * view, edit or delete from the dataset
  * @param row: is initialized on click
  */focusOnRow(row: number) {
+   console.log(this.dataset);
+   console.log(this.deleteModalId);
     this.row = row;
   };
 
 /**
  * Deletes the row in focus from the dataset
  */deleteRow() {
+   console.log(this.dataset);
     this.dataset.splice(this.row, 1);
   }
 }
@@ -242,7 +249,9 @@ export class DatatableConfig {
       add: { enable: boolean; text: string; };
       style?: string; //dropdown / buttons
       view?: { enable: boolean };
-      edit?: { enable: boolean };
+      edit?: { 
+        enable: boolean;
+      };
       delete?: { 
         enable: boolean; 
         message?: string;
@@ -250,4 +259,27 @@ export class DatatableConfig {
     }
   };
 };
+
+
+
+/**
+ *
+  <div class="embed-responsive embed-responsive-16by9">
+    <iframe class="embed-responsive-item" [src]="config.action.button.edit.url | safe"></iframe>
+  </div>
+ */
+
+import { Pipe, PipeTransform } from '@angular/core';
+import { DomSanitizer} from '@angular/platform-browser';
+
+@Pipe({ name: 'safe' })
+export class SafePipe implements PipeTransform {
+  constructor(private sanitizer: DomSanitizer) {}
+  transform(url) {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+} 
+
+
+
 // tslint:disable-next-line:max-line-length
