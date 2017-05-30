@@ -7,7 +7,7 @@ import { Component, Input, Output, EventEmitter, OnInit, OnChanges } from '@angu
  *  <textbox 
  *    [config]="configuration" 
  *    [bind]="textProperty" 
- *    (propertyUpdate)="textProperty=$event">
+ *    (propertyUpdate)="textProperty=$event"
  *  </textbox>
  */
 @Component({
@@ -16,9 +16,9 @@ import { Component, Input, Output, EventEmitter, OnInit, OnChanges } from '@angu
   <div class="form-group">
     <label class="col-sm-4 control-label" [innerHtml]="config.label.text"></label>
     <div [ngClass]="(!config.input.size || config.input.size == 'large' || config.input.size == '8' )?'col-sm-8': { 'small' : 'col-sm-2', 'medium' : 'col-sm-4', '1' : 'col-sm-1', '2' : 'col-sm-2', '3' : 'col-sm-3', '4' : 'col-sm-4', '5' : 'col-sm-5', '6' : 'col-sm-6', '7' : 'col-sm-7' }[config.input.size]">
-      <input *ngIf="!config.input.readonly && !config.input.placeholder" type="text" class="form-control input-sm" [name]="config.input.name" [(ngModel)]="bind" (ngModelChange)="propertyUpdate.emit(this.bind)">
-      <input *ngIf="!config.input.readonly && config.input.placeholder" type="text" class="form-control input-sm" [name]="config.input.name"[placeholder]="config.input.placeholder" [(ngModel)]="bind" (ngModelChange)="propertyUpdate.emit(this.bind)">
-      <input *ngIf="config.input.readonly" type="text" class="form-control" [id]="config.input.id" [name]="config.input.name" [(ngModel)]="bind" (ngModelChange)="propertyUpdate.emit(this.bind)" readonly>
+      <input *ngIf="!config.input.readonly && !config.input.placeholder" type="text" class="form-control input-sm" [name]="config.input.name" [(ngModel)]="bind" (ngModelChange)="update.emit(this.bind)">
+      <input *ngIf="!config.input.readonly && config.input.placeholder" type="text" class="form-control input-sm" [name]="config.input.name"[placeholder]="config.input.placeholder" [(ngModel)]="bind" (ngModelChange)="update.emit(this.bind)">
+      <input *ngIf="config.input.readonly" type="text" class="form-control" [id]="config.input.id" [name]="config.input.name" [(ngModel)]="bind" readonly>
     </div>
   </div>
   `,
@@ -31,7 +31,7 @@ import { Component, Input, Output, EventEmitter, OnInit, OnChanges } from '@angu
 export class TextboxComponent {
   @Input() config: TextBoxConfig;
   @Input() bind: string;
-  @Output() propertyUpdate = new EventEmitter();
+  @Output() update = new EventEmitter();
 }
 
 export class TextBoxConfig {
@@ -104,7 +104,7 @@ export class CheckboxConfig {
     <div class="col-sm-8">
       <div *ngFor="let option of config.input.options" class="radio">
         <label>
-          <input type="radio" [name]="config.input.name" [(ngModel)]="bind" (ngModelChange)="propertyUpdate.emit(this.bind)" [value]="option.value"> 
+          <input type="radio" [name]="config.input.name" [(ngModel)]="bind" (ngModelChange)="update.emit(this.bind)" [value]="option.value"> 
           {{option.text}}
         </label>
       </div>
@@ -120,7 +120,7 @@ export class CheckboxConfig {
 export class RadioComponent {
   @Input() config: RadioConfig;
   @Input() bind: string;
-  @Output() propertyUpdate = new EventEmitter();
+  @Output() update = new EventEmitter();
 }
 
 export class RadioConfig {
@@ -139,7 +139,7 @@ export class RadioConfig {
   <div class="form-group">
     <label class="col-sm-4 control-label" [innerHtml]="config.label.text"></label>
     <div [ngClass]="(!config.input.size || config.input.size == 'large' || config.input.size == '8' )?'col-sm-8': { 'small' : 'col-sm-2', 'medium' : 'col-sm-4', '1' : 'col-sm-1', '2' : 'col-sm-2', '3' : 'col-sm-3', '4' : 'col-sm-4', '5' : 'col-sm-5', '6' : 'col-sm-6', '7' : 'col-sm-7' }[config.input.size]">
-      <select *ngIf="!config.input.readonly" class="form-control input-sm" [name]="config.input.name" [(ngModel)]="bind" (ngModelChange)="propertyUpdate.emit(this.bind)">
+      <select *ngIf="!config.input.readonly" class="form-control input-sm" [name]="config.input.name" [(ngModel)]="bind" (ngModelChange)="update.emit(this.bind)">
         <option *ngIf="config.input.emptyOption" value=""></option>
         <option *ngFor="let option of config.input.options" [value]="option.value" [innerHtml]="option.text"></option>
         <option *ngIf="config.input.otherOption" value="other">Other</option>
@@ -156,7 +156,7 @@ export class RadioConfig {
 export class DropdownComponent {
   @Input() config: DropdownConfig;
   @Input() bind: string;
-  @Output() propertyUpdate = new EventEmitter();
+  @Output() update = new EventEmitter();
 
   otherSelected: boolean;
 }
@@ -171,22 +171,13 @@ export class DropdownConfig {
 @Component({
   selector: 'datatable',
   template: `
-  <table class="table table-hover table-bordered datatable" [id]="datasetId">
+  <table class="table table-hover datatable" [id]="datasetId">
     <thead>
       <tr>
         <th *ngIf="config.action.enable">
-          <div class="btn-group">
-            <span class="glyphicon glyphicon-th-list" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-hidden="true"></span>
-            <ul class="dropdown-menu">
-              <li *ngIf="!allSelected"><a (click)="selectAll()">Select All</a></li>
-              <li *ngIf="allSelected" ><a (click)="deselectAll()">Deselect All</a></li>
-                <li role="separator" class="divider"></li>
-              <li *ngIf="config.action.button.add.enable  && config.action.button.add.modal" ><a data-toggle="modal" [attr.data-target] = "'#addmodal'  + datasetId" >Add</a></li>
-              <li *ngIf="config.action.button.view.enable && config.action.button.view.modal"><a data-toggle="modal" [attr.data-target] = "'#viewmodal' + datasetId + row">View</a></li>
-              <li *ngIf="config.action.button.edit.enable && config.action.button.edit.modal"><a  data-toggle="modal" [attr.data-target] = "'#editmodal' + datasetId + row">Edit</a></li>
-              <li *ngIf="config.action.button.delete.enable"><a data-toggle="modal" [attr.data-target]="'#' + deleteModalId">Delete</a></li>
-            </ul>
-          </div>
+          <input type="checkbox" [(ngModel)]="allSelected" (change)="select($event.target.checked)">
+          <a *ngIf="config.action.button.add.enable  && config.action.button.add.modal" class="text-default datatable-icon" data-toggle="modal" [attr.data-target] = "'#addmodal'  + datasetId" > <span class="glyphicon glyphicon-plus-sign"></span></a>
+          <a *ngIf="config.action.button.delete.enable && rowsSelected.length > 0" class="text-danger datatable-icon" data-toggle="modal" [attr.data-target]="'#' + deleteModalId"> <span class="glyphicon glyphicon-remove-circle"></span></a>
         </th>
         <th *ngFor="let header of config.headers"  [innerHtml]="header.text"></th>
       </tr>
@@ -194,14 +185,7 @@ export class DropdownConfig {
     <tbody>
       <tr *ngFor="let data of dataset; let row = index;">
         <td *ngIf="config.action.enable === true">
-          
           <input type="checkbox" [value]="row" [checked]="allSelected" (change)="rowSelectionChange(row, $event.target.checked);">
-
-          <datatable-modal *ngIf="config.action.button.view.enable && config.action.button.view.modal"
-            [id]="'viewmodal' + datasetId + row"
-            [datarow]="data"
-            [config]= "config.action.button.view.modal"
-          ></datatable-modal>
 
           <datatable-modal *ngIf="config.action.button.edit.enable && config.action.button.edit.modal"
             [id]="'editmodal' + datasetId + row"
@@ -209,9 +193,9 @@ export class DropdownConfig {
             [config]= "config.action.button.edit.modal"
             (commit)= "dataset[row] = $event"
           ></datatable-modal>
-
         </td>
-        <td *ngFor="let head of config.headers" [innerHtml]="data[head.key]"></td>
+
+        <td *ngFor="let head of config.headers" [innerHtml]="data[head.key]" class="datatable-data" data-toggle="modal" [attr.data-target] = "'#editmodal' + datasetId + row"></td>
       </tr>
     </tbody>
   </table>
@@ -250,6 +234,13 @@ export class DropdownConfig {
   .datatable .btn{
     margin-bottom: 0px;
   }
+  .datatable-icon {
+    font-size: 13px;
+    margin-left: 5px;
+  }
+  .datatable-data {
+    cursor:pointer
+  }
   `]
 }) // <input type="checkbox" [checked]="allSelected" [name]="datasetId + row" [value]="row" (change)="selectedRow(data); focusOnRow(row);">
 export class DatatableComponent {
@@ -262,17 +253,17 @@ export class DatatableComponent {
  * the checkboxes in the table to checked
  */private allSelected: boolean;
 
-  selectAll() {
-    this.allSelected = true;
-    this.dataset.forEach(row => {
-      this.selectedRow(row);
-    });
+  select(state: boolean) {
+    this.allSelected = state;
+    if(state) {
+      this.dataset.forEach(row => {
+        this.selectedRow(row, true);
+      });
+    } else {
+      this.rowsSelected = [];
+    }
   };
 
-  deselectAll() {
-    this.allSelected = false;
-    this.rowsSelected = [];
-  };
 /**
  * The unique identifier for the dataset
  */private datasetId = Math.random().toString(36).substring(7); 
@@ -281,12 +272,6 @@ export class DatatableComponent {
  * This property will have the modal key 
  * to delete records from the datatable
  */private deleteModalId = Math.random().toString(36).substring(7);
-
-/**
- * This property will contain the 
- * row. Can only be set when the 
- * user clicks on the row
- */private row: number;
 
 /**
  * This property is an array 
@@ -299,34 +284,32 @@ export class DatatableComponent {
  * @param row: is initialized on click
  */rowSelectionChange(row: number, state: boolean ) {
     var data = this.dataset[row];
-    this.selectedRow(data);
-    
-    if(state) {
-      this.row = row;
-    } else {
-      this.row = null;
-    }
+    this.selectedRow(data, state);
+    console.log('Changed!');
   };
 
 /**
  * This method sets the row in focus to 
  * view, edit or delete from the dataset
  * @param row: is initialized on click
- */selectedRow(data: any) {
-    if(this.rowsSelected.indexOf(data) == -1) {
+ */selectedRow(data: any, state: boolean) {
+    let row = this.rowsSelected.indexOf(data);
+    if(state) {
       this.rowsSelected.push(data);
-    }else{
-      this.rowsSelected.splice(this.rowsSelected.indexOf(data), 1);
-    };
+    } else {
+      this.rowsSelected.splice(row, 1)
+    }
   };
 
 /**
  * Deletes the row in focus from the dataset
  */deleteRow() {
     this.rowsSelected.forEach(row => {
-      this.dataset.splice(this.dataset.indexOf(row), 1);
+      let datasetIndex = this.dataset.indexOf(row);
+      this.dataset.splice(datasetIndex, 1);
     });
     this.allSelected = false;
+    this.rowsSelected= [];
   };
 }
 
@@ -369,7 +352,7 @@ export class DatatableConfig {
               <textbox  *ngIf="element.type === 'textbox'"  
                 [config]="element[element.type].config" 
                 [bind]="editableDatarow[element[element.type].bind]" 
-                (propertyUpdate)="editableDatarow[element[element.type].bind] = $event"
+                (update)="editableDatarow[element[element.type].bind] = $event"
               ></textbox>
 
               <checkbox *ngIf="element.type === 'checkbox'" 
@@ -380,13 +363,13 @@ export class DatatableConfig {
               <radio *ngIf="element.type === 'radio'"    
                 [config]="element[element.type].config" 
                 [bind]="editableDatarow[element[element.type].bind]" 
-                (propertyUpdate)="editableDatarow[element[element.type].bind] = $event"
+                (update)="editableDatarow[element[element.type].bind] = $event"
               ></radio>
 
               <dropdown *ngIf="element.type === 'dropdown'" 
                 [config]="element[element.type].config" 
                 [bind]="editableDatarow[element[element.type].bind]" 
-                (propertyUpdate)="editableDatarow[element[element.type].bind] = $event"
+                (update)="editableDatarow[element[element.type].bind] = $event"
               ></dropdown>
 
             </div>
@@ -394,7 +377,7 @@ export class DatatableConfig {
         </div>
         <div *ngIf="config.footer.enable" class="modal-footer">
           <button (click)="cancelChange()" type="button" class="btn btn-default btn-action" data-dismiss="modal">Cancel</button>
-          <button *ngIf="config.footer.enable" (click)="commit.emit(editableDatarow)" type="button" class="btn btn-warning btn-action" data-dismiss="modal" [innerHtml]="config.footer.commit.text"></button>
+          <button *ngIf="config.footer.enable" (click)="commits()" type="button" class="btn btn-warning btn-action" data-dismiss="modal" [innerHtml]="config.footer.commit.text"></button>
         </div>
       </div>
     </div>
@@ -420,6 +403,12 @@ export class DatatableModal implements OnInit {
  */private cancelChange() {
     this.setEditableDatarow();
   }
+
+private commits(){
+  let editableDatarow = this.editableDatarow;
+  this.editableDatarow = {};
+  return this.commit.emit(editableDatarow);
+}
 
 /**
  * On init make a copy of the datarow 
@@ -454,13 +443,12 @@ export class DatatableModalConfig {
   footer: {
     enable: boolean;
     commit: {
-      text: string;
       enable: boolean;
+      text: string;
+      options: {
+        clearFormAfterSubmit?: boolean;
+      }
     }
   }
 }
-// tslint:disable-next-line:max-line-length
-
-
-
 // tslint:disable-next-line:max-line-length
